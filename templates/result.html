@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Details #{{ scan.id }} - PhishShield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-brand">
+                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <span>PhishShield</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item">
+                    <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ url_for('history') }}"><i class="fa-solid fa-clock-rotate-left"></i> Scan History</a>
+                </li>
+            </ul>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="header-top">
+            <div class="header-title">
+                <h1>Scan Report Details</h1>
+                <p>Detailed analysis breakdown for scan record #{{ scan.id }}</p>
+            </div>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+
+        <div class="scanner-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <span class="badge {% if scan.prediction == 'Safe' %}badge-safe{% else %}badge-phishing{% endif %}" style="font-size: 1.1rem; padding: 8px 24px;">
+                    {{ scan.prediction }}
+                </span>
+                <span style="font-size: 1rem; color: var(--text-muted);">
+                    Confidence Score: <strong style="color: var(--primary); font-size: 1.3rem;">{{ scan.confidence_score }}%</strong>
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label>Scanned URL</label>
+                <input type="text" class="form-input" value="{{ scan.url }}" readonly style="font-family: monospace; font-size: 1rem;">
+            </div>
+
+            <div class="details-grid" style="margin-top: 24px;">
+                <div class="detail-item">
+                    <span class="label">Target Domain</span>
+                    <span class="value">{{ scan.domain or 'N/A' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Resolved IP</span>
+                    <span class="value">{{ scan.ip_address or 'N/A' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">URL Character Length</span>
+                    <span class="value">{{ scan.url_length }} chars</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">SSL / HTTPS Enforced</span>
+                    <span class="value">
+                        {% if scan.is_https %}
+                            <i class="fa-solid fa-check" style="color: var(--success);"></i> Yes
+                        {% else %}
+                            <i class="fa-solid fa-xmark" style="color: var(--danger);"></i> No
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Timestamp</span>
+                    <span class="value">{{ scan.scanned_at }}</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

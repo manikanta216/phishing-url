@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishShield - AI-Powered Phishing URL Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">
+            <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <span>PhishShield</span>
+        </div>
+        <div class="nav-links">
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Get Started</a>
+            {% endif %}
+        </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main class="hero">
+        <h1>AI-Powered Protection Against Phishing Threats</h1>
+        <p>Instantly analyze suspicious URLs using advanced Machine Learning feature extraction, deep heuristics, and real-time security detection.</p>
+        <div style="display: flex; gap: 16px;">
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="padding: 14px 32px; font-size: 1.1rem;"><i class="fa-solid fa-magnifying-glass"></i> Start Scanning</a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary" style="padding: 14px 32px; font-size: 1.1rem;">Create Free Account</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline" style="padding: 14px 32px; font-size: 1.1rem;">Sign In</a>
+            {% endif %}
+        </div>
+    </main>
+
+</body>
+</html>

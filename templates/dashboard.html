@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - PhishShield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-brand">
+                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <span>PhishShield</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item active">
+                    <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ url_for('history') }}"><i class="fa-solid fa-clock-rotate-left"></i> Scan History</a>
+                </li>
+            </ul>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div style="margin-bottom: 24px;">
+              {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                  <span>{{ message }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="header-top">
+            <div class="header-title">
+                <h1>Security Dashboard</h1>
+                <p>Scan URLs, analyze threats, and review real-time security statistics.</p>
+            </div>
+            <div class="user-profile">
+                <div class="avatar">{{ session.get('name', 'U')[0].upper() }}</div>
+                <span style="font-size: 0.9rem; font-weight: 600;">{{ session.get('name') }}</span>
+            </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Total Scans</span>
+                    <div class="stat-icon icon-blue"><i class="fa-solid fa-globe"></i></div>
+                </div>
+                <div class="stat-value">{{ total_scans }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Phishing Detected</span>
+                    <div class="stat-icon icon-danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                </div>
+                <div class="stat-value" style="color: var(--danger);">{{ phishing_count }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Safe URLs</span>
+                    <div class="stat-icon icon-success"><i class="fa-solid fa-circle-check"></i></div>
+                </div>
+                <div class="stat-value" style="color: var(--success);">{{ safe_count }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Model Accuracy</span>
+                    <div class="stat-icon icon-purple"><i class="fa-solid fa-brain"></i></div>
+                </div>
+                <div class="stat-value">{{ accuracy }}</div>
+            </div>
+        </div>
+
+        <!-- Scanner Form Card -->
+        <div class="scanner-card">
+            <h2><i class="fa-solid fa-magnifying-glass-chart" style="color: var(--primary); margin-right: 8px;"></i> Real-Time URL Scanner</h2>
+            <form id="scanForm" class="scan-form">
+                <input type="text" id="scanInput" class="scan-input" placeholder="Enter URL to scan (e.g., https://example.com)" required>
+                <button type="submit" id="scanBtn" class="btn btn-primary" style="padding: 14px 28px;">
+                    <i id="scanSpinner" class="fa-solid fa-circle-notch fa-spin" style="display: none;"></i>
+                    <span id="scanBtnText">Scan URL</span>
+                </button>
+            </form>
+
+            <!-- Result Display Container -->
+            <div id="resultBox" class="result-box">
+                <div class="result-header">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <h3 style="font-size: 1.2rem;">Scan Analysis</h3>
+                        <span id="resPrediction" class="badge"></span>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Confidence Score: </span>
+                        <strong id="resConfidence" style="font-size: 1.1rem; color: var(--primary);"></strong>
+                    </div>
+                </div>
+
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="label">Domain</span>
+                        <span id="resDomain" class="value"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">IP Address</span>
+                        <span id="resIp" class="value"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">URL Length</span>
+                        <span id="resLength" class="value"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">HTTPS Protocol</span>
+                        <span id="resHttps" class="value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Scans Table -->
+        <div class="table-card">
+            <h3>Recent Scans</h3>
+            {% if recent_scans %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>Domain</th>
+                        <th>Status</th>
+                        <th>Confidence</th>
+                        <th>Scanned At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scan in recent_scans %}
+                    <tr>
+                        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ scan.url }}</td>
+                        <td>{{ scan.domain or 'N/A' }}</td>
+                        <td>
+                            {% if scan.prediction == 'Safe' %}
+                                <span class="badge badge-safe">Safe</span>
+                            {% else %}
+                                <span class="badge badge-phishing">Phishing</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ scan.confidence_score }}%</td>
+                        <td>{{ scan.scanned_at }}</td>
+                        <td><a href="{{ url_for('result_page', scan_id=scan.id) }}" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: var(--text-muted); padding: 20px 0; text-align: center;">No scans recorded yet. Enter a URL above to perform your first security scan!</p>
+            {% endif %}
+        </div>
+
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

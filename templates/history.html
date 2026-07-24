@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan History - PhishShield</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-brand">
+                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <span>PhishShield</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item">
+                    <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+                </li>
+                <li class="sidebar-item active">
+                    <a href="{{ url_for('history') }}"><i class="fa-solid fa-clock-rotate-left"></i> Scan History</a>
+                </li>
+            </ul>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="header-top">
+            <div class="header-title">
+                <h1>Scan History</h1>
+                <p>Complete audit log of all URLs scanned under your account.</p>
+            </div>
+            <div class="user-profile">
+                <div class="avatar">{{ session.get('name', 'U')[0].upper() }}</div>
+                <span style="font-size: 0.9rem; font-weight: 600;">{{ session.get('name') }}</span>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <h3>All Historical Scans</h3>
+            {% if scans %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Scan ID</th>
+                        <th>URL</th>
+                        <th>Domain</th>
+                        <th>IP Address</th>
+                        <th>Prediction</th>
+                        <th>Confidence</th>
+                        <th>HTTPS</th>
+                        <th>Scanned At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scan in scans %}
+                    <tr>
+                        <td>#{{ scan.id }}</td>
+                        <td style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ scan.url }}</td>
+                        <td>{{ scan.domain or 'N/A' }}</td>
+                        <td>{{ scan.ip_address or 'N/A' }}</td>
+                        <td>
+                            {% if scan.prediction == 'Safe' %}
+                                <span class="badge badge-safe">Safe</span>
+                            {% else %}
+                                <span class="badge badge-phishing">Phishing</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ scan.confidence_score }}%</td>
+                        <td>
+                            {% if scan.is_https %}
+                                <i class="fa-solid fa-lock" style="color: var(--success);"></i> Yes
+                            {% else %}
+                                <i class="fa-solid fa-lock-open" style="color: var(--danger);"></i> No
+                            {% endif %}
+                        </td>
+                        <td>{{ scan.scanned_at }}</td>
+                        <td><a href="{{ url_for('result_page', scan_id=scan.id) }}" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;">Details</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: var(--text-muted); padding: 20px 0; text-align: center;">No history found. Perform a scan from the dashboard to populate history.</p>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+</body>
+</html>
